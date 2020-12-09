@@ -21,8 +21,10 @@
 #endif
 
 #include "mongo/platform/basic.h"
-
+//#include "mongo/stdx/memory.h"
 #include "mongo/util/scopeguard.h"
+#include <cstring>
+#include <memory>
 
 #include <openssl/sha.h>
 #include <openssl/evp.h>
@@ -34,19 +36,20 @@ namespace crypto {
  * Computes a SHA-1 hash of 'input'.
  */
 bool sha1(const unsigned char* input, const size_t inputLen, unsigned char* output) {
-    EVP_MD_CTX digestCtx;
+    std::unique_ptr<EVP_MD_CTX, decltype(&EVP_MD_CTX_free)> digestCtx(EVP_MD_CTX_new(), EVP_MD_CTX_free);
+/*    EVP_MD_CTX digestCtx;
     EVP_MD_CTX_init(&digestCtx);
-    ON_BLOCK_EXIT(EVP_MD_CTX_cleanup, &digestCtx);
+    ON_BLOCK_EXIT(EVP_MD_CTX_cleanup, &digestCtx);*/
 
-    if (1 != EVP_DigestInit_ex(&digestCtx, EVP_sha1(), NULL)) {
+    if (1 != EVP_DigestInit_ex(digestCtx.get(), EVP_sha1(), NULL)) {
         return false;
     }
 
-    if (1 != EVP_DigestUpdate(&digestCtx, input, inputLen)) {
+    if (1 != EVP_DigestUpdate(digestCtx.get(), input, inputLen)) {
         return false;
     }
 
-    return (1 == EVP_DigestFinal_ex(&digestCtx, output, NULL));
+    return (1 == EVP_DigestFinal_ex(digestCtx.get(), output, NULL));
 }
 
 /*
