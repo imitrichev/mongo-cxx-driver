@@ -30,9 +30,7 @@ bool supports_sasl(DBClientConnection& conn) {
     return result["version"].toString() >= "2.5.3";
 }
 
-// The LDAP test is temporarily disabled.  TODO CXX-1212: Re-enable this test once the LDAP issues
-// on the RHEL 5.5 32-bit hosts have been resolved.
-TEST(SASLAuthentication, DISABLED_LDAP) {
+TEST(SASLAuthentication, LDAP) {
     DBClientConnection conn;
     conn.connect("ldaptest.10gen.cc");  // only available internally or on jenkins
 

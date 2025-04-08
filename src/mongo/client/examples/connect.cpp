@@ -22,8 +22,6 @@
 #include <windows.h>
 #endif
 
-#include <boost/ref.hpp>
-
 #include <iostream>
 #include <cstdlib>
 

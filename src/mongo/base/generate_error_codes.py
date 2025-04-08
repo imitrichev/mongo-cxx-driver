@@ -115,9 +115,11 @@ def generate_header(filename, error_codes, error_classes):
     predicate_declarations = ';\n        '.join(
         'static bool is%s(Error err)' % ec[0] for ec in error_classes)
 
-    open(filename, 'wb').write(header_template % dict(
-            error_code_enum_declarations=enum_declarations,
-            error_code_class_predicate_declarations=predicate_declarations))
+    with open(filename, 'wb') as f:
+        f.write((header_template % {
+            'error_code_enum_declarations': enum_declarations,
+            'error_code_class_predicate_declarations': predicate_declarations
+        }).encode('utf-8'))
 
 def generate_source(filename, error_codes, error_classes):
     symbol_to_string_cases = ';\n        '.join(
@@ -129,11 +131,13 @@ def generate_source(filename, error_codes, error_classes):
         'case %s: return %s' % (ec[0], ec[0]) for ec in error_codes)
     predicate_definitions = '\n    '.join(
         generate_error_class_predicate_definition(*ec) for ec in error_classes)
-    open(filename, 'wb').write(source_template % dict(
-            symbol_to_string_cases=symbol_to_string_cases,
-            string_to_symbol_cases=string_to_symbol_cases,
-            int_to_symbol_cases=int_to_symbol_cases,
-            error_code_class_predicate_definitions=predicate_definitions))
+    with open(filename, 'wb') as f:
+        f.write((source_template % {
+            'symbol_to_string_cases': symbol_to_string_cases,
+            'string_to_symbol_cases': string_to_symbol_cases,
+            'int_to_symbol_cases': int_to_symbol_cases,
+            'error_code_class_predicate_definitions': predicate_definitions
+        }).encode('utf-8'))
 
 def generate_error_class_predicate_definition(class_name, code_names):
     cases = '\n        '.join('case %s:' % c for c in code_names)

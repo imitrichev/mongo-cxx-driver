@@ -6,37 +6,13 @@
 
 cxx_driver_variables:
 
-  ## The basic set of tests to run on most buildvariants.
+## The basic set of tests to run on most buildvariants
   latest_test_list: &latest_tests
     - name: "compile"
     - name: "unit-test"
     - name: "integration-test-latest"
-    # The auth integration tests are temporary disabled. TODO CXX-1213: Uncomment the below line
-    # once the mongo-orchestration issue in CXX-1213 has been resolved.
-    # - name: "integration-test-latest-with-auth"
+    - name: "integration-test-latest-with-auth"
     - name: "client-test-latest"
-
-  ## The latest test list, temporarily trimmed down on Windows.  TODO CXX-1210: Replace this with
-  ## 'latest_test_list' once the taskkill.exe issue in CXX-1210 has been resolved.
-  windows_latest_test_list: &windows_latest_tests
-    - name: "compile"
-    - name: "unit-test"
-
-  ## The latest test list, temporarily trimmed down on OS X.  TODO CXX-1211: Replace this with
-  ## 'latest_test_list' once the mongo-orchestration issue in CXX-1211 has been resolved.
-  osx_latest_test_list: &osx_latest_tests
-    - name: "compile"
-    - name: "unit-test"
-
-  ## Same as above, but with the MMAPv1 storage engine.
-  latest_test_with_mmapv1_list: &latest_tests_with_mmapv1
-    - name: "compile"
-    - name: "unit-test"
-    - name: "integration-test-latest-with-MMAPv1"
-    # The auth integration tests are temporary disabled. TODO CXX-1213: Uncomment the below line
-    # once the mongo-orchestration issue in CXX-1213 has been resolved.
-    # - name: "integration-test-latest-with-auth-and-MMAPv1"
-    - name: "client-test-latest-with-MMAPv1"
 
   ## Note that the in 3.0, the default storage engine is MMAPv1 and
   ## WiredTiger is opt-in, but as of MongoDB 3.1.4, the
@@ -48,15 +24,10 @@ cxx_driver_variables:
     - name: "integration-test-3.0-with-WiredTiger"
     - name: "integration-test-3.2"
     - name: "integration-test-3.2-with-MMAPv1"
-    - name: "integration-test-3.4"
-    - name: "integration-test-3.4-with-MMAPv1"
     - name: "client-test-3.0"
     - name: "client-test-3.0-with-WiredTiger"
     - name: "client-test-3.2"
     - name: "client-test-3.2-with-MMAPv1"
-    - name: "client-test-3.4"
-    - name: "client-test-3.4-with-MMAPv1"
-
 
   version_test_list: &version_tests
     - name: "compile"
@@ -67,14 +38,12 @@ cxx_driver_variables:
     - name: "integration-test-2.6"
     - name: "integration-test-3.0"
     - name: "integration-test-3.2"
-    - name: "integration-test-3.4"
     - name: "integration-test-latest"
     - name: "client-test-2.2"
     - name: "client-test-2.4"
     - name: "client-test-2.6"
     - name: "client-test-3.0"
     - name: "client-test-3.2"
-    - name: "client-test-3.4"
     - name: "client-test-latest"
 
 ## Common download urls (merge in as hashes)
@@ -304,21 +273,14 @@ functions:
     params:
       updates:
         - key: "mongo_url"
-          value: ${mongo_url_prefix}${mongo_url_enterprise_keyword|enterprise-}${mongo_url_platform|}3.0.15.${mongo_url_extension|tgz}
+          value: ${mongo_url_prefix}${mongo_url_enterprise_keyword|enterprise-}${mongo_url_platform|}3.0.11.${mongo_url_extension|tgz}
 
   "set version 3.2" :
     command: expansions.update
     params:
       updates:
         - key: "mongo_url"
-          value: ${mongo_url_prefix}${mongo_url_enterprise_keyword|enterprise-}${mongo_url_platform|}3.2.17.${mongo_url_extension|tgz}
-
-  "set version 3.4" :
-    command: expansions.update
-    params:
-      updates:
-        - key: "mongo_url"
-          value: ${mongo_url_prefix}${mongo_url_enterprise_keyword|enterprise-}${mongo_url_platform|}3.4.10.${mongo_url_extension|tgz}
+          value: ${mongo_url_prefix}${mongo_url_enterprise_keyword|enterprise-}${mongo_url_platform|}3.2.5.${mongo_url_extension|tgz}
 
   "set version latest" :
     command: expansions.update
@@ -332,8 +294,6 @@ functions:
     params:
       working_dir: "mongo-cxx-driver"
       script: |
-        set -o verbose
-        set -o errexit
         ${start_mongo_orchestration}
         ${scons|scons} ${scons_flags} ${warning_flags} ${compile_flags} ${toolchain_flags} ${extrapath} ${dllpath} ${cpppath} ${libpath} ${orchestration_preset} integration
 
@@ -342,17 +302,20 @@ functions:
     params:
       working_dir: "mongo-cxx-driver"
       script: |
-        set -o verbose
-        set -o errexit
         ${start_mongo_orchestration}
         ${scons|scons} ${scons_flags} ${warning_flags} ${compile_flags} ${toolchain_flags} ${extrapath} ${dllpath} ${cpppath} ${libpath} ${orchestration_preset} examples
 
 pre:
+  - command: expansions.fetch
+    params:
+      keys:
+        - local_key: "aws_key"
+          remote_key: "project_aws_key"
+        - local_key: "aws_secret"
+          remote_key: "project_aws_secret"
   - command: shell.exec
     params:
       script: |
-        set -o verbose
-        set -o errexit
         rm -rf "mongo-cxx-driver"
         if [ ! -e /data/db ]; then
             mkdir /data/db
@@ -365,8 +328,6 @@ post:
   - command: shell.exec
     params:
       script: |
-        set -o verbose
-        set -o errexit
         cd mongo-cxx-driver && mongo-orchestration stop
         ${killall_mci|pkill -9 mongo-orchestration; pkill -9 mongod; pkill -9 mongos;}
 
@@ -496,25 +457,6 @@ tasks:
         - func: "fetch mongodb"
         - func: "run integration tests"
 
-    - name: "integration-test-3.4"
-      depends_on:
-        - name: "compile"
-      commands:
-        - func: "set version 3.4"
-        - func: "fetch artifacts"
-        - func: "fetch mongodb"
-        - func: "run integration tests"
-
-    - name: "integration-test-3.4-with-MMAPv1"
-      depends_on:
-        - name: "compile"
-      commands:
-        - func: "set version 3.4"
-        - func: "use MMAPv1 storage"
-        - func: "fetch artifacts"
-        - func: "fetch mongodb"
-        - func: "run integration tests"
-
     - name: "integration-test-latest"
       depends_on:
         - name: "compile"
@@ -524,32 +466,11 @@ tasks:
         - func: "fetch mongodb"
         - func: "run integration tests"
 
-    - name: "integration-test-latest-with-MMAPv1"
-      depends_on:
-        - name: "compile"
-      commands:
-        - func: "set version latest"
-        - func: "use MMAPv1 storage"
-        - func: "fetch artifacts"
-        - func: "fetch mongodb"
-        - func: "run integration tests"
-
     - name: "integration-test-latest-with-auth"
       depends_on:
         - name: "compile"
       commands:
         - func: "set version latest"
-        - func: "fetch artifacts"
-        - func: "use auth"
-        - func: "fetch mongodb"
-        - func: "run integration tests"
-
-    - name: "integration-test-latest-with-auth-and-MMAPv1"
-      depends_on:
-        - name: "compile"
-      commands:
-        - func: "set version latest"
-        - func: "use MMAPv1 storage"
         - func: "fetch artifacts"
         - func: "use auth"
         - func: "fetch mongodb"
@@ -605,7 +526,7 @@ tasks:
       depends_on:
         - name: "compile"
       commands:
-        - func: "set version 3.2"
+        - func: "set version 3.0"
         - func: "fetch artifacts"
         - func: "fetch mongodb"
         - func: "run client tests"
@@ -614,26 +535,7 @@ tasks:
       depends_on:
         - name: "compile"
       commands:
-        - func: "set version 3.2"
-        - func: "use MMAPv1 storage"
-        - func: "fetch artifacts"
-        - func: "fetch mongodb"
-        - func: "run client tests"
-
-    - name: "client-test-3.4"
-      depends_on:
-        - name: "compile"
-      commands:
-        - func: "set version 3.4"
-        - func: "fetch artifacts"
-        - func: "fetch mongodb"
-        - func: "run client tests"
-
-    - name: "client-test-3.4-with-MMAPv1"
-      depends_on:
-        - name: "compile"
-      commands:
-        - func: "set version 3.4"
+        - func: "set version 3.0"
         - func: "use MMAPv1 storage"
         - func: "fetch artifacts"
         - func: "fetch mongodb"
@@ -644,16 +546,6 @@ tasks:
         - name: "compile"
       commands:
         - func: "set version latest"
-        - func: "fetch artifacts"
-        - func: "fetch mongodb"
-        - func: "run client tests"
-
-    - name: "client-test-latest-with-MMAPv1"
-      depends_on:
-        - name: "compile"
-      commands:
-        - func: "set version latest"
-        - func: "use MMAPv1 storage"
         - func: "fetch artifacts"
         - func: "fetch mongodb"
         - func: "run client tests"
@@ -682,7 +574,7 @@ buildvariants:
     <<: *mongo_orchestration_linux
   run_on:
   - rhel55-test
-  tasks: *latest_tests
+  tasks: *version_tests
 
 ## RHEL 5.5 32-bit
 
@@ -698,8 +590,7 @@ buildvariants:
     <<: *mongo_orchestration_linux
   run_on:
   - rhel55-test
-  # Need to test with mmapv1, as default storage engine (WiredTiger) doesn't have 32-bit support.
-  tasks: *latest_tests_with_mmapv1
+  tasks: *latest_tests
 
 ## Ubuntu 1404
 
@@ -726,7 +617,7 @@ buildvariants:
     <<: *mongo_orchestration_linux
   run_on:
   - ubuntu1404-test
-  tasks: *version_tests
+  tasks: *latest_tests
 
 ## Ubuntu 1404 C++11
 
@@ -757,7 +648,7 @@ buildvariants:
     <<: *mongo_orchestration_osx
   run_on:
   - osx-1010
-  tasks: *osx_latest_tests
+  tasks: *latest_tests
 
 #######################################
 #        Windows Buildvariants        #
@@ -794,7 +685,7 @@ buildvariants:
     <<: *with_msvc2010
   run_on:
   - windows-64-vs2010-compile
-  tasks: *windows_latest_tests
+  tasks: *latest_tests
 
 ## Windows 64-bit DEBUG DYNAMIC (msvc2010)
 ## dynamic client and RT
@@ -810,7 +701,7 @@ buildvariants:
     <<: *with_msvc2010
   run_on:
   - windows-64-vs2010-compile
-  tasks: *windows_latest_tests
+  tasks: *latest_tests
 
 ## Windows 64-bit DYNAMIC (msvc2013)
 ## dynamic client and RT
@@ -825,7 +716,7 @@ buildvariants:
     <<: *with_msvc2013
   run_on:
   - windows-64-vs2013-compile
-  tasks: *windows_latest_tests
+  tasks: *latest_tests
 
 ## Windows 64-bit (msvc2013) DYNAMIC-RT
 ## static client, dynamic RT
@@ -840,7 +731,7 @@ buildvariants:
     <<: *with_msvc2013
   run_on:
   - windows-64-vs2013-compile
-  tasks: *windows_latest_tests
+  tasks: *latest_tests
 
 ## Windows 64-bit DYNAMIC (msvc2015)
 ## dynamic client and RT
@@ -855,4 +746,4 @@ buildvariants:
     <<: *with_msvc2015
   run_on:
   - windows-64-vs2015-compile
-  tasks: *windows_latest_tests
+  tasks: *latest_tests
