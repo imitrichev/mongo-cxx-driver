@@ -2,7 +2,7 @@
 Welcome to the MongoDB C++ Driver!
 
   This version is the unofficial patch to build legacy driver on modern OSs, like Ubuntu 22.04 LTS.
-  It supports Scons build with Python3.10, Scons 4.0.1, Boost 1.74.
+  It supports Scons build with Python3.10, Scons 4.0.1, Boost 1.74 (tested on Ubuntu 22.04 LTS).
 
 Please see our [wiki page](https://github.com/mongodb/mongo-cxx-driver/wiki/Download-and-Compile-the-Legacy-Driver) for information about building, testing, and using the driver.
 
