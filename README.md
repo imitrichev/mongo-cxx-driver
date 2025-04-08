@@ -1,11 +1,13 @@
 # MongoDB C++ Driver [![Build Status](https://travis-ci.org/mongodb/mongo-cxx-driver.svg?branch=legacy)](https://travis-ci.org/mongodb/mongo-cxx-driver)
 Welcome to the MongoDB C++ Driver!
 
+  This version is the unofficial patch to build legacy driver on modern OSs, like Ubuntu 22.04 LTS.
+  It supports Scons build with Python3.10, Scons 4.0.1, Boost 1.74.
+
 Please see our [wiki page](https://github.com/mongodb/mongo-cxx-driver/wiki/Download-and-Compile-the-Legacy-Driver) for information about building, testing, and using the driver.
 
-  Version [1.1.1](https://github.com/mongodb/mongo-cxx-driver/releases/tag/legacy-1.1.1) of the
-  C++ legacy driver has been released. Please report any bugs or issues in the C++
-  [JIRA project](http://jira.mongodb.org/browse/CXX).
+  Version [1.1.3](https://github.com/mongodb/mongo-cxx-driver/tree/legacy) of the
+  C++ legacy driver is the last version of legacy driver, and has reached EOL.
 
 You should only use the "legacy" branch if you had been previously using
 the "26compat" branch (or the driver inside of the server source) and want to
@@ -19,8 +21,8 @@ API.
 | Branch   | Stability   | Development       | Purpose                                                      |
 | -------- | ------------| ----------------- | -----------------------------------------------------        |
 | master   | Stable      | Stable Evolution  | New C++11 driver                                             |
-| legacy   | Stable      | Stable Evolution  | Primary stable C++ driver release                            |
-| 26compat | Stable      | Maintenance Only  | Drop in replacement for users of existing 2.6 era C++ driver |
+| legacy   | Stable      | EOL               | Primary stable C++ driver release                            |
+| 26compat | Stable      | EOL               | Drop in replacement for users of existing 2.6 era C++ driver |
 
 Please note that stable branches are only production quality at stable release tags. Other
 commits or pre-release tags on a stable branch represent ongoing development work towards the
